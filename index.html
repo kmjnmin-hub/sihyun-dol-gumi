@@ -508,8 +508,8 @@ const INVITE = {
   // 갤러리: 3열 썸네일, 처음 9장 + 더보기
   const GALLERY = [
   {"src":"gallery/hanbok_laugh.jpg","thumb":"gallery/hanbok_laugh_t.jpg","pos":"50% 34%","alt":"홍색 돌복을 입고 활짝 웃는 시현이","wide":false},
-  {"src":"@a","thumb":"@a","pos":"44% 78%","alt":"꽃 옆에 선 홍색 돌복 차림의 시현이","wide":false},
-  {"src":"@b","thumb":"@b","pos":"50% 30%","alt":"돌잡이 상 앞에서 떡을 먹는 시현이","wide":false},
+  {"src":"gallery/photo_red.jpg","thumb":"gallery/photo_red_t.jpg","pos":"44% 78%","alt":"꽃 옆에 선 홍색 돌복 차림의 시현이","wide":false},
+  {"src":"gallery/photo_saekdong.jpg","thumb":"gallery/photo_saekdong_t.jpg","pos":"50% 30%","alt":"돌잡이 상 앞에서 떡을 먹는 시현이","wide":false},
   {"src":"gallery/saekdong_cry.jpg","thumb":"gallery/saekdong_cry_t.jpg","pos":"50% 26%","alt":"돌잡이 상 앞에서 울먹이는 시현이","wide":false},
   {"src":"gallery/saekdong_crawl.jpg","thumb":"gallery/saekdong_crawl_t.jpg","pos":"50% 30%","alt":"자개장 위로 기어오르는 색동 돌복 차림의 시현이","wide":true},
   {"src":"gallery/family_smile.jpg","thumb":"gallery/family_smile_t.jpg","pos":"50% 40%","alt":"엄마 아빠와 나란히 앉아 웃는 가족 사진","wide":true},
@@ -525,15 +525,18 @@ const INVITE = {
   {"src":"gallery/truck_sit.jpg","thumb":"gallery/truck_sit_t.jpg","pos":"50% 40%","alt":"장난감 굴착기 앞에 앉은 시현이","wide":false}
 ];
   const FIRST = 9;
-  // '@a' / '@b' = 페이지에 이미 들어 있는 사진(CSS --img-a / --img-b)을 다시 내려받지 않고 쓴다
-  const inlineUrl = k => getComputedStyle(root).getPropertyValue('--img-' + k).trim().replace(/^url\(\s*["']?|["']?\s*\)$/g, '');
-  GALLERY.forEach(g => ['src','thumb'].forEach(p => { if (g[p][0] === '@') g[p] = inlineUrl(g[p].slice(1)); }));
   safe('gallery', () => {
     const box = $('#gal');
     box.innerHTML = GALLERY.map((g, i) =>
       `<button data-open="${i}" class="${i >= FIRST ? 'extra' : ''}${g.wide ? ' wide' : ''}" aria-label="${esc(g.alt)}, 크게 보기"><img alt="" decoding="async" style="object-position:${esc(g.pos)}"></button>`).join('');
     const imgsEl = [...box.querySelectorAll('img')];
-    const load = im => { if (!im.getAttribute('src')) { const g = GALLERY[imgsEl.indexOf(im)]; im.onload = () => im.classList.add('ok'); im.src = g.thumb; } };
+    const load = im => {
+      if (im.getAttribute('src')) return;
+      const g = GALLERY[imgsEl.indexOf(im)];
+      im.onload = () => im.classList.add('ok');
+      im.src = g.thumb;
+      if (im.complete && im.naturalWidth) im.classList.add('ok');   // 캐시에서 바로 뜬 경우 대비
+    };
     imgsEl.slice(0, FIRST).forEach(load);   // 처음 9장은 바로, 나머지는 '더보기'를 누를 때 불러온다
     const more = $('#galMore');
     if (GALLERY.length > FIRST) {
